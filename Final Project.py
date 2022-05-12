@@ -20,25 +20,30 @@ class Game:
         self.very_bottom_frame = tkinter.Frame(self.master)
         # buttons
         self.prompt_label = tkinter.Label(self.top_frame, text='Welcome to Wordle!', font="Arial, 60")
-        self.instructions = tkinter.Button(self.mid_frame, text='How To Play', height=1, width=10, font="Arial, 20",
+        self.instructions = tkinter.Button(self.bottom_frame, text='How To Play', height=1, width=10, font="Arial, 20",
                                            command=self.how_to_play)
         self.top_score = []
         self.top_score_name = tkinter.StringVar()
+        self.Leader_header_label = tkinter.Label(self.mid_frame, text="Users who completed Wordle!\n ------------------------\n\n", font="Arial, 20")
 
-        self.Leader_label = tkinter.Label(self.top_frame, textvariable =self.top_score_name ,
+        self.Leader_label = tkinter.Label(self.mid_frame, textvariable=self.top_score_name,
                                           font="Arial, 20")
-        self.Leader_label.pack(side='left', padx=50, pady=100)
-        self.play_button = tkinter.Button(self.mid_frame, text='Play', height=1, width=10, font="Arial, 20",
+
+        self.Leader_header_label.pack()
+        self.Leader_label.pack()
+
+        self.play_button = tkinter.Button(self.bottom_frame, text='Play', height=1, width=10, font="Arial, 20",
                                           command=self.play)
         self.play_button.pack(side='left', padx=50, pady=100)
-        self.quit_button = tkinter.Button(self.mid_frame, text='Quit', command=self.quit, height=1, width=10,
+        self.quit_button = tkinter.Button(self.bottom_frame, text='Quit', command=self.quit, height=1, width=10,
                                           font="Arial, 20")
         self.quit_button.pack(side='right', padx=50, pady=100)
         self.bg = tkinter.PhotoImage(file="spacebg.gif")
         self.my_bg = tkinter.Label(self.master, image=self.bg)
         self.my_bg.place(x=0, y=0, relwidth=1, relheight=1)
         self.my_bg.pack(fill="both", expand=True)
-
+        #load
+        self.load_top_score()
         self.instructions.pack(side='left')
         self.my_bg.pack()
         self.prompt_label.pack()
@@ -60,17 +65,18 @@ class Game:
         _ = Play(self.master)
 
     def load_top_score(self):
-        filename = "top-score.dat"
+        filename = "top-score_list.dat"
         try:
             input_file = open(filename, 'rb')
             self.top_score = pickle.load(input_file)
             input_file.close()
         except (FileNotFoundError, IOError):
             self.top_score = []
-        if max(self.top_score) > 0:
-            self.top_score_name = self.top_score[0]
+        if len(self.top_score) >= 1:
+            self.top_score_name.set(self.top_score)
         else:
-            self.top_score_name = "no one passed the BOSS level"
+            self.top_score_name.set("Try wordle and pass the BOSS level to be on teh leaderboard")
+
 
 class HowToPlay:
     def __init__(self, master):
@@ -78,7 +84,7 @@ class HowToPlay:
         self.instructions_window.geometry("1000x550")
         self.instructions_window.title('How to play Wordle!')
         self.instructions_header = tkinter.Label(self.instructions_window, text='\nInstructions \n _______________ \n',
-                                                 font="Arial, 50")
+                                                 font="Arial, 40")
         self.instructions_header.pack()
         self.instructions_description = tkinter.Label(self.instructions_window,
                                                       text='Step 1: Press the play button at the home screen\nStep 2: '
@@ -102,10 +108,11 @@ class Play:
         self.play_window.title('GAME ON')
         self.play_window.attributes('-fullscreen', True)
         self.level_themes = []
+        self.top_score=[]
 
         self.theme_index = tkinter.IntVar()
         self.current_score = tkinter.IntVar()
-
+        self.Add_to_leaderboard = tkinter.BooleanVar()
         self.current_score_label = tkinter.StringVar()
         # Set frames
         self.top_frame = tkinter.Frame(self.play_window)
@@ -170,7 +177,6 @@ class Play:
         self.level2_button.pack_forget()
         self.current_score_label.set("")
 
-
     # Load level themes
 
     def play_level1(self):
@@ -188,7 +194,26 @@ class Play:
         self.level_guess.pack(pady=10)
         self.level_hint_button.pack(padx=100, pady=300, side=tkinter.RIGHT)
 
+    def add_user(self):
+        filename = "top-score_list.dat"
+        try:
+            input_file = open(filename, 'rb')
+            self.top_score = pickle.load(input_file)
+            input_file.close()
+        except (FileNotFoundError, IOError):
+            self.top_score = []
+        name = self.level_guess.get("1.0", 'end-1c')
+        self.top_score.append(name)
+        input_file=open(filename,'wb')
+        pickle.dump(self.top_score,input_file)
+        input_file.close()
+        self.exit()
+
+
     def evaluate(self):
+        if self.Add_to_leaderboard.get():
+            self.add_user()
+
 
         if self.level_guess.get("1.0", 'end-1c').upper() == self.level_themes[self.theme_index.get()].get_solution():
             self.current_score.set(self.current_score.get() + 3)
@@ -204,26 +229,31 @@ class Play:
             self.current_theme.set(self.level_themes[self.theme_index.get()].get_question())
 
         else:
+            self.level_enter_button.pack_forget()
+            self.level_guess.pack_forget()
+            self.level_hint_button.pack_forget()
+
             if self.current_score.get() == 12:
                 self.level2_button.pack(side='right', padx=400)
                 self.current_score_label.set("Congratulations, you passed level 1 and now you can play the BOSS level")
+                self.level_theme.pack_forget()
             elif self.current_score.get() >= 24:
                 self.level2_button.pack(side='right', padx=400)
                 self.current_score_label.set("Congratulations, you have complete the Wordle game!")
                 self.level2_button.pack_forget()
+                #Now need to ask the user for their name and record
+                self.current_theme.set("Please enter your name to be added to the leaderboard")
+                self.Add_to_leaderboard.set(1)
+                self.level_guess.pack(pady=10)
+                self.level_enter_button.pack(side=tkinter.BOTTOM)
 
-            self.level_enter_button.pack_forget()
-            self.level_guess.pack_forget()
-            self.level_theme.pack_forget()
-            self.level_hint_button.pack_forget()
-            self.level_hint_button.pack_forget()
+
             # end of level 1
             #
 
     def hint(self):
         self.hint_answer.set(self.level_themes[self.theme_index.get()].get_hint())
         self.hint_label.pack()
-
 
 
 def main():
