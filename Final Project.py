@@ -73,9 +73,9 @@ class Game:
         except (FileNotFoundError, IOError):
             self.top_score = []
         if len(self.top_score) >= 1:
-            self.top_score_name.set(self.top_score)
+            self.top_score_name.set("\n".join(self.top_score))
         else:
-            self.top_score_name.set("Try wordle and pass the BOSS level to be on teh leaderboard")
+            self.top_score_name.set("Try wordle and pass the BOSS level to be on the leaderboard")
 
 
 class HowToPlay:
