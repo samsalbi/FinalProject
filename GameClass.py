@@ -26,4 +26,3 @@ class Game:
 
     def get_solution(self):
         return self.__solution
-
