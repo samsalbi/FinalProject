@@ -246,11 +246,8 @@ class Play:
                 self.Add_to_leaderboard.set(1)
                 self.level_guess.pack(pady=10)
                 self.level_enter_button.pack(side=tkinter.BOTTOM)
-
-
-            # end of level 1
-            #
-
+        
+    #show hint
     def hint(self):
         self.hint_answer.set(self.level_themes[self.theme_index.get()].get_hint())
         self.hint_label.pack()
