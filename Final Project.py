@@ -1,135 +1,235 @@
-#import tk
+# import tk
 import tkinter
 import pickle
+import GameClass
 
-#create class for program
+
+# create class for program
 class Game:
-    def __init__(self):
-        self.main_window = tkinter.Tk()
-        self.main_window.attributes('-fullscreen', True)
+    def __init__(self, master):
+        self.master = master
+        self.master.attributes('-fullscreen', True)
+        self.master.title('Wordle Game!')
+        # self.main_window.geometry("800x600")
+        self.w, self.h = self.master.winfo_screenwidth(), self.master.winfo_screenheight()
+        self.master.geometry("%dx%d" % (self.w, self.h))
 
-        #self.main_window.geometry("800x600")
-        self.w, self.h = self.main_window.winfo_screenwidth(), self.main_window.winfo_screenheight()
-        self.main_window.geometry("%dx%d" % (self.w, self.h))
+        self.top_frame = tkinter.Frame(self.master)
+        self.mid_frame = tkinter.Frame(self.master)
+        self.bottom_frame = tkinter.Frame(self.master)
+        self.very_bottom_frame = tkinter.Frame(self.master)
+        # buttons
+        self.prompt_label = tkinter.Label(self.top_frame, text='Welcome to Wordle!', font="Arial, 60")
+        self.instructions = tkinter.Button(self.mid_frame, text='How To Play', height=1, width=10, font="Arial, 20",
+                                           command=self.how_to_play)
+        self.top_score = []
+        self.top_score_name = tkinter.StringVar()
 
-        self.top_frame = tkinter.Frame(self.main_window)
-        self.mid_frame = tkinter.Frame(self.main_window)
-        self.bottom_frame = tkinter.Frame(self.main_window)
-        self.very_bottom_frame = tkinter.Frame(self.main_window)
-        #buttons
-        self.prompt_label = tkinter.Label(self.top_frame, text='Welcome to Wordle!\n', font="Arial, 60")
-        self.instructions = tkinter.Button(self.mid_frame, text='How To Play', height=1, width=10, font="Arial, 20", command=self.opened)
-        self.play_button = tkinter.Button(self.mid_frame, text='Play', height=1, width=10, font="Arial, 20", command=self.opened2)
+        self.Leader_label = tkinter.Label(self.top_frame, textvariable =self.top_score_name ,
+                                          font="Arial, 20")
+        self.Leader_label.pack(side='left', padx=50, pady=100)
+        self.play_button = tkinter.Button(self.mid_frame, text='Play', height=1, width=10, font="Arial, 20",
+                                          command=self.play)
         self.play_button.pack(side='left', padx=50, pady=100)
-        self.quit_button = tkinter.Button(self.mid_frame, text='Quit', command=self.quit, height=1, width=10, font="Arial, 20")
+        self.quit_button = tkinter.Button(self.mid_frame, text='Quit', command=self.quit, height=1, width=10,
+                                          font="Arial, 20")
         self.quit_button.pack(side='right', padx=50, pady=100)
         self.bg = tkinter.PhotoImage(file="spacebg.gif")
-        self.my_bg = tkinter.Label(self.main_window, image=self.bg)
+        self.my_bg = tkinter.Label(self.master, image=self.bg)
         self.my_bg.place(x=0, y=0, relwidth=1, relheight=1)
         self.my_bg.pack(fill="both", expand=True)
 
         self.instructions.pack(side='left')
         self.my_bg.pack()
         self.prompt_label.pack()
-        #self.instructions_window_text.pack()
-        #pack frames
+        # self.instructions_window_text.pack()
+        # pack frames
         self.top_frame.pack()
         self.mid_frame.pack()
         self.bottom_frame.pack()
         self.very_bottom_frame.pack()
         tkinter.mainloop()
-    #back button
-    def opened(self):
-        self.instructions_window = tkinter.Toplevel()
-        self.instructions_window.geometry("1000x550")
-        self.instructions_window.title('How to play Wordle!')
-        self.instructions_header = tkinter.Label(self.instructions_window, text='\nInstructions \n _______________ \n', font="Arial, 50")
-        self.instructions_header.pack()
-        self.instructions_description = tkinter.Label(self.instructions_window,
-                                                      text='Step 1: Press the play button at the home screen\nStep 2: Press the current level you are on, if starting; press 1\nStep 3: Guess the word based on the theme, you can buy a hint with points\nStep 4: Have fun!', font="Arial, 22", justify="left" )
-        self.instructions_description.pack()
-        self.back_button = tkinter.Button(self.instructions_window, text='Back', font="Arial, 20", height=1, width=10, command=self.back)
-        self.back_button.pack(side='top', pady=10)
-
-    def opened2(self):
-        self.play_window = tkinter.Toplevel()
-        self.play_window.title('Select A Level!')
-        self.play_window.attributes('-fullscreen', True)
-        self.play_label = tkinter.Label(self.play_window, text='Select Your Current Level!', font="Arial, 100")
-        self.play_label.pack(pady=20)
-        self.level1_button = tkinter.Button(self.play_window, text='Level 1', height=3, width=10, command=self.level1)
-        self.level1_button.pack(side='top', padx=100)
-        #self.level2_button = tkinter.Button(self.play_window, text='Ｌｅｖｅｌ ２ （ＢＯＳＳ）', height=3, width=20)
-        #self.level2_button.pack(side='right', padx=400)
-        self.back_button = tkinter.Button(self.play_window, text='Back', font="Arial, 20", height=1, width=10)
-        self.back_button.pack(side='bottom', pady=10)
-
-    def level1(self):
-        self.level1_theme = tkinter.Label(self.play_window, text='You are in level 1 and your theme is: Class Subject:')
-        self.level1_theme.pack(side='left', padx=1)
-        self.level1_guess = tkinter.Text(self.play_window, width=30, height=1)
-        self.level1_guess.pack(side='left', padx=1)
-        self.level1_enter_button = tkinter.Button(self.play_window, text='Enter', font="Arial, 20", height=1, width=10, command=self.enter)
-        self.level1_enter_button.pack()
-        self.level1_hint_button = tkinter.Button(self.play_window, text='Hint', font="Arial, 20", height=1, width=10, command=self.hint)
-        self.level1_hint_button.pack()
-        self.level_1_score_label = tkinter.Radiobutton(self.play_window, text='Score:' + str(self.score), font="Arial, 20", height=1, width=10, command=self.label)
-        self.level_1_score_label.pack()
-
-
-    def save_file(self):
-        try:
-            save_file = open('save.dat', 'wb')
-            self.save = pickle.load(save_file)
-            save_file.close()
-        except (FileNotFoundError, IOError):
-            self.save = []
-
-
-
-
-
-    def label(self, save_file):
-        self.score = 0
-        self.enter()
-        pickle.load(save_file)
-        pickle.dump(self.score, save_file)
-
-
-
-
-    def enter(self):
-        self.score = 0
-        if self.level1_guess == "Math" or "math":
-            self.score = self.score + 3
-        else:
-            self.level1_guess = tkinter.Text(self.play_window, width=30, height=1)
-            self.level1_guess.pack(side='left', padx=1)
-
-    def hint(self):
-        self.score = self.score - 3
-        self.question = tkinter.Label(self.play_window, text="What is the tallest mountain?")
-        self.question_text = tkinter.Text(self.play_window, width=30, height=1)
-        if self.question_text == "Mount Everest":
-            self.hint_answer = tkinter.Label(self.play_window, text="The word is 4 letters")
-            self.hint()
-        else:
-            self.hint()
-
-
-    #def level2(self):
-
-
-
-    def back(self):
-        self.instructions_window.destroy()
-
-    def back2(self):
-        self.play_window.destroy()
 
     def quit(self):
-        self.main_window.destroy()
+        self.master.destroy()
+
+    def how_to_play(self):
+        _ = HowToPlay(self.master)
+
+    def play(self):
+        _ = Play(self.master)
+
+    def load_top_score(self):
+        filename = "top-score.dat"
+        try:
+            input_file = open(filename, 'rb')
+            self.top_score = pickle.load(input_file)
+            input_file.close()
+        except (FileNotFoundError, IOError):
+            self.top_score = []
+        if max(self.top_score) > 0:
+            self.top_score_name = self.top_score[0]
+        else:
+            self.top_score_name = "no one passed the BOSS level"
+
+class HowToPlay:
+    def __init__(self, master):
+        self.instructions_window = tkinter.Toplevel(master)
+        self.instructions_window.geometry("1000x550")
+        self.instructions_window.title('How to play Wordle!')
+        self.instructions_header = tkinter.Label(self.instructions_window, text='\nInstructions \n _______________ \n',
+                                                 font="Arial, 50")
+        self.instructions_header.pack()
+        self.instructions_description = tkinter.Label(self.instructions_window,
+                                                      text='Step 1: Press the play button at the home screen\nStep 2: '
+                                                           'Press the current level you are on, if starting; press 1 '
+                                                           '\nStep 3: Guess the word based on the theme, you can buy '
+                                                           'a hint with points\nStep 4: Have fun!', font="Arial, 22",
+                                                      justify="left")
+        self.instructions_description.pack()
+        self.back_button = tkinter.Button(self.instructions_window, text='Close', font="Arial, 20", height=1, width=10,
+                                          command=self.close)
+        self.back_button.pack(side='top', pady=10)
+
+    def close(self):
+        self.instructions_window.destroy()
 
 
-#run the code
-game = Game()
+class Play:
+    def __init__(self, master):
+
+        self.play_window = tkinter.Toplevel(master)
+        self.play_window.title('GAME ON')
+        self.play_window.attributes('-fullscreen', True)
+        self.level_themes = []
+
+        self.theme_index = tkinter.IntVar()
+        self.current_score = tkinter.IntVar()
+
+        self.current_score_label = tkinter.StringVar()
+        # Set frames
+        self.top_frame = tkinter.Frame(self.play_window)
+        self.play_frame = tkinter.Frame(self.play_window)
+        self.bottom_frame = tkinter.Frame(self.play_window)
+        # Set labels
+        self.play_label = tkinter.Label(self.top_frame, text='Guess the word!', font="Arial, 50", pady=10,
+                                        justify="left", padx=50)
+
+        self.score_label = tkinter.Label(self.top_frame, textvariable=self.current_score_label, font="Arial, 30",
+                                         justify="right")
+        self.play_label.pack(side=tkinter.TOP, padx=10, pady=5)
+        self.score_label.pack(side=tkinter.BOTTOM, padx=200, pady=10, ipadx=100, ipady=20)
+
+        self.level1_button = tkinter.Button(self.play_frame, text='Play level 1', height=3, width=10,
+                                            command=self.play_level1)
+        self.level1_button.pack(side='left', padx=100)
+
+        self.level2_button = tkinter.Button(self.play_frame, text='Ｌｅｖｅｌ ２ （ＢＯＳＳ）', height=3, width=20,
+                                            command=self.play_level2)
+
+        self.current_theme = tkinter.StringVar()
+        self.level_theme = tkinter.Label(self.play_frame, textvariable=self.current_theme, font="Arial, 20")
+        self.level_guess = tkinter.Text(self.play_frame, width=30, height=1, font="Arial, 20")
+        self.level_enter_button = tkinter.Button(self.play_frame, text='Enter', font="Arial, 20", height=1, width=10,
+                                                 command=self.evaluate)
+        self.level_theme.pack(side=tkinter.TOP, pady=10)
+        # hint section
+        self.hint_answer = tkinter.StringVar()
+        self.hint_label = tkinter.Label(self.play_frame, textvariable=self.hint_answer)
+        self.back_button = tkinter.Button(self.bottom_frame, text='Quit', font="Arial, 20", height=1, width=10,
+                                          command=self.exit)
+        self.level_hint_button = tkinter.Button(self.bottom_frame, text='Hint', font="Arial, 20", height=1, width=10,
+                                                command=self.hint)
+
+        self.back_button.pack(padx=10, pady=300, side=tkinter.LEFT)
+
+        # pack the frames
+
+        self.top_frame.pack()
+        self.play_frame.pack()
+        self.bottom_frame.pack()
+
+    # Exit
+    def exit(self):
+        self.play_window.destroy()
+
+    # Load level themes
+    def play_level2(self):
+        self.level_themes.clear()
+        theme1 = GameClass.Game("City: ", "7 letters", "CHICAGO")
+        theme2 = GameClass.Game("Italian food: ", "5 letters", "PIZZA")
+        theme3 = GameClass.Game("Greek God: ", "4 letters", "ZEUS")
+        theme4 = GameClass.Game("US State:", "8 letters", "ILLINOIS")
+        self.level_themes = [theme1, theme2, theme3, theme4]
+        self.theme_index.set(0)
+        self.current_theme.set(self.level_themes[0].get_question())
+        self.level1_button.pack_forget()
+        self.level_theme.pack(side=tkinter.TOP, pady=10)
+        self.level_enter_button.pack(side=tkinter.BOTTOM, pady=10)
+        self.level_guess.pack(pady=10)
+        self.level2_button.pack_forget()
+        self.current_score_label.set("")
+
+
+    # Load level themes
+
+    def play_level1(self):
+
+        theme1 = GameClass.Game("Class Subject: ", "4 letters", "MATH")
+        theme2 = GameClass.Game("Sports: ", "6 Letters", "SOCCER")
+        theme3 = GameClass.Game("Soda: ", "5 letters", "PEPSI")
+        theme4 = GameClass.Game("Coding Language: ", "6 letters", "PYTHON")
+        self.level_themes = []
+        self.level_themes = [theme1, theme2, theme3, theme4]
+        self.theme_index.set(0)
+        self.current_theme.set(self.level_themes[0].get_question())
+        self.level1_button.pack_forget()
+        self.level_enter_button.pack(side=tkinter.BOTTOM, pady=10)
+        self.level_guess.pack(pady=10)
+        self.level_hint_button.pack(padx=100, pady=300, side=tkinter.RIGHT)
+
+    def evaluate(self):
+
+        if self.level_guess.get("1.0", 'end-1c').upper() == self.level_themes[self.theme_index.get()].get_solution():
+            self.current_score.set(self.current_score.get() + 3)
+            # print(self.level_guess.get("1.0", 'end-1c'))
+        else:
+            self.current_score.set(self.current_score.get() - 3)
+        self.current_score_label.set("Your score is: " + str(self.current_score.get()))
+
+        self.hint_label.pack_forget()
+        self.level_guess.delete("1.0", "end")
+        if self.theme_index.get() + 1 < 4:
+            self.theme_index.set(self.theme_index.get() + 1)
+            self.current_theme.set(self.level_themes[self.theme_index.get()].get_question())
+
+        else:
+            if self.current_score.get() == 12:
+                self.level2_button.pack(side='right', padx=400)
+                self.current_score_label.set("Congratulations, you passed level 1 and now you can play the BOSS level")
+            elif self.current_score.get() >= 24:
+                self.level2_button.pack(side='right', padx=400)
+                self.current_score_label.set("Congratulations, you have complete the Wordle game!")
+                self.level2_button.pack_forget()
+
+            self.level_enter_button.pack_forget()
+            self.level_guess.pack_forget()
+            self.level_theme.pack_forget()
+            self.level_hint_button.pack_forget()
+            self.level_hint_button.pack_forget()
+            # end of level 1
+            #
+
+    def hint(self):
+        self.hint_answer.set(self.level_themes[self.theme_index.get()].get_hint())
+        self.hint_label.pack()
+
+
+
+def main():
+    root = tkinter.Tk()
+    _ = Game(root)
+    root.mainloop()
+
+
+main()
